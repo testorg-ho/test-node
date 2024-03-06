@@ -1,0 +1,52 @@
+import requests
+import re
+
+base_url = "https://github.com/marketplace?page={}&q=sort%3Apopularity-desc&query=sort%3Apopularity-desc&type=actions&verification=verified_creator"
+search_string = '<a href="/marketplace/actions/'
+
+def process_page(page_number, action_names):
+    url = base_url.format(page_number)
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        print("Processing page {}...".format(page_number))
+
+        found_action = False
+
+        for line in response.text.split('\n'):
+            if search_string in line:
+                found_action = True
+                match = re.search(r'\/marketplace\/actions\/([^"]+)', line)
+                if match:
+                    action_name = match.group(1)
+                    action_names.append(action_name)
+                    print("Found action: {}".format(action_name))
+
+        if not found_action:
+            print("No more actions found. Exiting...")
+            return False
+
+        return True
+
+    else:
+        print("Failed to fetch page {}. Status code: {}".format(page_number, response.status_code))
+        return False
+
+def main():
+    start_page = 0
+
+    action_names = []
+    
+    while True:
+        if not process_page(start_page, action_names):
+            break
+        start_page += 1
+
+    print("Action names array:", action_names)
+
+    # Writing action names to a text file
+    with open("action_names.txt", "w") as file:
+        file.write(",".join(action_names))
+
+if __name__ == "__main__":
+    main()
