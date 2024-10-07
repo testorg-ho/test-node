@@ -1,0 +1,45 @@
+.github/workflows/test
+name: Run Tests
+
+on:
+  # Automatically trigger the workflow on pull requests to the main branch
+  pull_request:
+    branches:
+      - main
+
+  # Allow manual triggering and choosing the branch
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to run tests on'
+        required: true
+        default: 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.branch || github.head_ref || 'main' }}
+
+    # Step 2: Set up Python (you can specify your desired version)
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'  # Replace with the Python version you are using
+
+    # Step 3: Install Make
+    - name: Install make
+      run: sudo apt-get install make
+
+    # Step 4: Create virtual environment and run `make install`
+    - name: Install dependencies
+      run: make install
+
+    # Step 5: Run tests
+    - name: Run tests
+      run: make test
