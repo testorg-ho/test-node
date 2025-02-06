@@ -1,0 +1,82 @@
+import threading
+
+def singleton(cls):
+    instances = {}
+
+    def get_instance(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+
+    return get_instance
+
+@singleton
+class MetricsStore:
+    def __init__(self):
+        self.metrics = {}  # Stores cumulative values
+        self.history = []  # Stores all metric updates as objects
+        self.lock = threading.Lock()  # Lock for thread safety
+
+    def update_metric(self, name, time_diff):
+        """Adds time_diff to the metric total and logs it in history."""
+        with self.lock:
+            if name in self.metrics:
+                self.metrics[name] += time_diff
+            else:
+                self.metrics[name] = time_diff
+
+            # Append to global history
+            self.history.append({"name": name, "value": time_diff})
+
+    def set_metric(self, name, value):
+        """Initializes or updates the metric and logs it in history."""
+        with self.lock:
+            self.metrics[name] = value  # Overwrite total value
+
+            # Append to global history
+            self.history.append({"name": name, "value": value})
+
+    def get_metric(self, name):
+        """Returns the metric total or 0 if it does not exist."""
+        with self.lock:
+            return self.metrics.get(name, 0)
+
+    def get_history(self):
+        """Returns the full history of all metric updates."""
+        with self.lock:
+            return self.history
+
+    def to_file(self, file_path):
+        """Saves metrics history and summary to a text file."""
+        with self.lock:
+            with open(file_path, "w") as file:
+                file.write("************* Call History *************\n")
+                
+                for entry in self.history:
+                    file.write(f"Metric: {entry['name']} | Value: {entry['value']}\n")
+                
+                file.write("************* Summary *************\n")
+                
+                for name, total in self.metrics.items():
+                    file.write(f"Metric: {name} | Total: {total}\n")
+
+# Testing
+store = MetricsStore()
+
+store.set_metric("processing_time", 5.0)
+store.update_metric("processing_time", 2.0)
+store.update_metric("db_query_time", 1.5)
+
+# Save to file
+store.to_file("metrics_log.txt")
+
+# File content will look like:
+"""
+************* Call History *************
+Metric: processing_time | Value: 5.0
+Metric: processing_time | Value: 2.0
+Metric: db_query_time | Value: 1.5
+************* Summary *************
+Metric: processing_time | Total: 7.0
+Metric: db_query_time | Total: 1.5
+"""
