@@ -13,7 +13,7 @@ jobs:
       - name: Run Job 1 - Generate Files
         run: |
           echo "Job 1 output file" > job_1_output.txt
-          sleep 5  # Simulating a 5-second delay
+          sleep 60  # Simulating a 5-second delay
 
       - name: Upload Job 1 Output
         uses: actions/upload-artifact@v4
@@ -38,7 +38,7 @@ jobs:
         run: |
           cat job_1_output.txt > job_2_output.txt
           echo "Job 2 processed data" >> job_2_output.txt
-          sleep 5  # Simulating a 5-second delay
+          sleep 60  # Simulating a 5-second delay
 
       - name: Upload Job 2 Output
         uses: actions/upload-artifact@v4
@@ -67,7 +67,7 @@ jobs:
         run: |
           cat job_1_output.txt job_2_output.txt > job_3_output.txt
           echo "Job 3 done" >> job_3_output.txt
-          sleep 5  # Simulating a 5-second delay
+          sleep 60  # Simulating a 5-second delay
 
       - name: Upload Job 3 Output
         uses: actions/upload-artifact@v4
@@ -96,7 +96,7 @@ jobs:
         run: |
           cat job_1_output.txt job_2_output.txt > job_4_output.txt
           echo "Job 4 done" >> job_4_output.txt
-          sleep 5  # Simulating a 5-second delay
+          sleep 60  # Simulating a 5-second delay
 
       - name: Upload Job 4 Output
         uses: actions/upload-artifact@v4
