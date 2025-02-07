@@ -1,0 +1,105 @@
+name: Multi-Job Workflow with Artifacts and Delays
+
+on:
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  job_1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Job 1 - Generate Files
+        run: |
+          echo "Job 1 output file" > job_1_output.txt
+          sleep 5  # Simulating a 5-second delay
+
+      - name: Upload Job 1 Output
+        uses: actions/upload-artifact@v4
+        with:
+          name: job-1-artifact
+          path: job_1_output.txt
+          retention-days: 1  # Optional: Deletes after 1 day
+
+  job_2:
+    needs: job_1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Job 1 Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: job-1-artifact
+
+      - name: Run Job 2 - Process Job 1 Output
+        run: |
+          cat job_1_output.txt > job_2_output.txt
+          echo "Job 2 processed data" >> job_2_output.txt
+          sleep 5  # Simulating a 5-second delay
+
+      - name: Upload Job 2 Output
+        uses: actions/upload-artifact@v4
+        with:
+          name: job-2-artifact
+          path: job_2_output.txt
+
+  job_3:
+    needs: job_2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Job 1 Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: job-1-artifact
+
+      - name: Download Job 2 Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: job-2-artifact
+
+      - name: Run Job 3 - Use Previous Outputs
+        run: |
+          cat job_1_output.txt job_2_output.txt > job_3_output.txt
+          echo "Job 3 done" >> job_3_output.txt
+          sleep 5  # Simulating a 5-second delay
+
+      - name: Upload Job 3 Output
+        uses: actions/upload-artifact@v4
+        with:
+          name: job-3-artifact
+          path: job_3_output.txt
+
+  job_4:
+    needs: job_2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Job 1 Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: job-1-artifact
+
+      - name: Download Job 2 Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: job-2-artifact
+
+      - name: Run Job 4 - Use Previous Outputs
+        run: |
+          cat job_1_output.txt job_2_output.txt > job_4_output.txt
+          echo "Job 4 done" >> job_4_output.txt
+          sleep 5  # Simulating a 5-second delay
+
+      - name: Upload Job 4 Output
+        uses: actions/upload-artifact@v4
+        with:
+          name: job-4-artifact
+          path: job_4_output.txt
