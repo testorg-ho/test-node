@@ -1,7 +1,7 @@
-name: Cached Workflow 
+name: Multi-Job Workflow with Cache Fix
 
 on:
-  workflow_dispatch:  # Ручний запуск
+  workflow_dispatch:
 
 jobs:
   job_1:
@@ -14,7 +14,7 @@ jobs:
         run: |
           echo "Job 1 output file 1" > job_1_file_1.txt
           echo "Job 1 output file 2" > job_1_file_2.txt
-          sleep 30  # Симуляція затримки
+          sleep 5  # Симуляція затримки
 
       - name: Cache Job 1 Output
         uses: actions/cache@v4
@@ -37,9 +37,10 @@ jobs:
 
       - name: Run Job 2 - Process Multiple Files
         run: |
+          ls -la  # Перевіряємо, що файли є
           cat job_1_file_*.txt > job_2_combined_output.txt
           echo "Job 2 processed data" >> job_2_combined_output.txt
-          sleep 30  # Симуляція затримки
+          sleep 5  # Симуляція затримки
 
       - name: Cache Job 2 Output
         uses: actions/cache@v4
@@ -62,17 +63,18 @@ jobs:
             job_2_combined_output.txt
           key: job-2-${{ github.run_id }}
 
+      - name: Debug - List Files
+        run: ls -la
+
       - name: Run Job 3 - Use All Previous Outputs
         run: |
+          if [ ! -f "job_2_combined_output.txt" ]; then
+            echo "Error: job_2_combined_output.txt not found!"
+            exit 1
+          fi
           cat job_1_file_*.txt job_2_combined_output.txt > job_3_final_output.txt
           echo "Job 3 done" >> job_3_final_output.txt
-          sleep 30  # Симуляція затримки
-
-      - name: Cache Job 3 Output
-        uses: actions/cache@v4
-        with:
-          path: job_3_final_output.txt
-          key: job-3-${{ github.run_id }}
+          sleep 5  # Симуляція затримки
 
   job_4:
     needs: job_2
@@ -89,14 +91,15 @@ jobs:
             job_2_combined_output.txt
           key: job-2-${{ github.run_id }}
 
+      - name: Debug - List Files
+        run: ls -la
+
       - name: Run Job 4 - Use All Previous Outputs
         run: |
+          if [ ! -f "job_2_combined_output.txt" ]; then
+            echo "Error: job_2_combined_output.txt not found!"
+            exit 1
+          fi
           cat job_1_file_*.txt job_2_combined_output.txt > job_4_final_output.txt
           echo "Job 4 done" >> job_4_final_output.txt
-          sleep 30  # Симуляція затримки
-
-      - name: Cache Job 4 Output
-        uses: actions/cache@v4
-        with:
-          path: job_4_final_output.txt
-          key: job-4-${{ github.run_id }}
+          sleep 5  # Симуляція затримки
