@@ -1,0 +1,102 @@
+name: Multi-Job Workflow with Cache and Delays
+
+on:
+  workflow_dispatch:  # Ручний запуск
+
+jobs:
+  job_1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Job 1 - Generate Multiple Files
+        run: |
+          echo "Job 1 output file 1" > job_1_file_1.txt
+          echo "Job 1 output file 2" > job_1_file_2.txt
+          sleep 5  # Симуляція затримки
+
+      - name: Cache Job 1 Output
+        uses: actions/cache@v4
+        with:
+          path: job_1_file_*.txt
+          key: job-1-${{ github.run_id }}
+
+  job_2:
+    needs: job_1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Restore Cache from Job 1
+        uses: actions/cache@v4
+        with:
+          path: job_1_file_*.txt
+          key: job-1-${{ github.run_id }}
+
+      - name: Run Job 2 - Process Multiple Files
+        run: |
+          cat job_1_file_*.txt > job_2_combined_output.txt
+          echo "Job 2 processed data" >> job_2_combined_output.txt
+          sleep 5  # Симуляція затримки
+
+      - name: Cache Job 2 Output
+        uses: actions/cache@v4
+        with:
+          path: job_2_combined_output.txt
+          key: job-2-${{ github.run_id }}
+
+  job_3:
+    needs: job_2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Restore Cache from Job 1 & Job 2
+        uses: actions/cache@v4
+        with:
+          path: |
+            job_1_file_*.txt
+            job_2_combined_output.txt
+          key: job-2-${{ github.run_id }}
+
+      - name: Run Job 3 - Use All Previous Outputs
+        run: |
+          cat job_1_file_*.txt job_2_combined_output.txt > job_3_final_output.txt
+          echo "Job 3 done" >> job_3_final_output.txt
+          sleep 5  # Симуляція затримки
+
+      - name: Cache Job 3 Output
+        uses: actions/cache@v4
+        with:
+          path: job_3_final_output.txt
+          key: job-3-${{ github.run_id }}
+
+  job_4:
+    needs: job_2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Restore Cache from Job 1 & Job 2
+        uses: actions/cache@v4
+        with:
+          path: |
+            job_1_file_*.txt
+            job_2_combined_output.txt
+          key: job-2-${{ github.run_id }}
+
+      - name: Run Job 4 - Use All Previous Outputs
+        run: |
+          cat job_1_file_*.txt job_2_combined_output.txt > job_4_final_output.txt
+          echo "Job 4 done" >> job_4_final_output.txt
+          sleep 5  # Симуляція затримки
+
+      - name: Cache Job 4 Output
+        uses: actions/cache@v4
+        with:
+          path: job_4_final_output.txt
+          key: job-4-${{ github.run_id }}
