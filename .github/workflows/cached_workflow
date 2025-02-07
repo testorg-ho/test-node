@@ -1,4 +1,4 @@
-name: Multi-Job Workflow with Cache and Delays
+name: Cached Workflow 
 
 on:
   workflow_dispatch:  # Ручний запуск
@@ -14,7 +14,7 @@ jobs:
         run: |
           echo "Job 1 output file 1" > job_1_file_1.txt
           echo "Job 1 output file 2" > job_1_file_2.txt
-          sleep 5  # Симуляція затримки
+          sleep 30  # Симуляція затримки
 
       - name: Cache Job 1 Output
         uses: actions/cache@v4
@@ -39,7 +39,7 @@ jobs:
         run: |
           cat job_1_file_*.txt > job_2_combined_output.txt
           echo "Job 2 processed data" >> job_2_combined_output.txt
-          sleep 5  # Симуляція затримки
+          sleep 30  # Симуляція затримки
 
       - name: Cache Job 2 Output
         uses: actions/cache@v4
@@ -66,7 +66,7 @@ jobs:
         run: |
           cat job_1_file_*.txt job_2_combined_output.txt > job_3_final_output.txt
           echo "Job 3 done" >> job_3_final_output.txt
-          sleep 5  # Симуляція затримки
+          sleep 30  # Симуляція затримки
 
       - name: Cache Job 3 Output
         uses: actions/cache@v4
@@ -93,7 +93,7 @@ jobs:
         run: |
           cat job_1_file_*.txt job_2_combined_output.txt > job_4_final_output.txt
           echo "Job 4 done" >> job_4_final_output.txt
-          sleep 5  # Симуляція затримки
+          sleep 30  # Симуляція затримки
 
       - name: Cache Job 4 Output
         uses: actions/cache@v4
